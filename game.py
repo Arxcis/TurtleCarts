@@ -67,11 +67,11 @@ class GoCart(Turtle):
         self.shape(self.cart)
         self.settiltangle(90)
 
-    def turn_left(self):
+    def left(self):
         self.direction += 45
         self.seth(self.direction)
 
-    def turn_right(self):
+    def right(self):
         self.direction -= 45
         self.seth(self.direction)
 
@@ -109,15 +109,71 @@ def switch_player(pl):
         print('Switched to player ', current)
     return set_new_player
 
+def drive():
+    if current == 0:
+        grid[0].drive()
+    elif current == 1:
+        grid[1].drive() 
+    elif current == 2:
+        grid[2].drive() 
+    elif current == 3:
+        grid[3].drive() 
+    elif current == 4:
+        grid[4].drive() 
+    elif current == 5:
+        grid[5].drive()
+
+def back():
+    if current == 0:
+        grid[0].back()
+    elif current == 1:
+        grid[1].back() 
+    elif current == 2:
+        grid[2].back() 
+    elif current == 3:
+        grid[3].back() 
+    elif current == 4:
+        grid[4].back() 
+    elif current == 5:
+        grid[5].back()
+
+def left():
+    if current == 0:
+        grid[0].left()
+    elif current == 1:
+        grid[1].left() 
+    elif current == 2:
+        grid[2].left() 
+    elif current == 3:
+        grid[3].left() 
+    elif current == 4:
+        grid[4].left() 
+    elif current == 5:
+        grid[5].left()
+
+def right():
+    if current == 0:
+        grid[0].right()
+    elif current == 1:
+        grid[1].right() 
+    elif current == 2:
+        grid[2].right() 
+    elif current == 3:
+        grid[3].right() 
+    elif current == 4:
+        grid[4].right() 
+    elif current == 5:
+        grid[5].right()       
+
 grid = []
 grid = create_grid(6)
 
 print (grid)
 
-s.onkey(grid[current].drive, 'Up')
-s.onkey(grid[current].back, 'Down')
-s.onkey(grid[current].turn_left, 'Left')
-s.onkey(grid[current].turn_right, 'Right')
+s.onkey(drive, 'Up')
+s.onkey(back, 'Down')
+s.onkey(left, 'Left')
+s.onkey(right, 'Right')
     
 s.onkey(switch_player(0), '1')
 s.onkey(switch_player(1), '2')
