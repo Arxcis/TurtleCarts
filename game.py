@@ -9,13 +9,9 @@ from turtle import *
 s = Screen()
 s.delay(0)
 
-player = [    ['redcart', 'red'],
-           ['bluecart', 'blue'],
-           ['greencart', 'green'],
-           ['yellowcart', 'yellow'],
-           ['pinkcart', 'pink'],
-           ['blackcart', 'black']        ]
-current = 0
+colorgrid = ['red', 'blue', 'green', 
+            'yellow','pink','black']
+current = 3
 
 class CartPolygon(Shape):
     def __init__(self, color):
@@ -88,16 +84,23 @@ class GoCart(Turtle):
 
 def create_grid(number):
     valid_numbers = [1,2,3,4,5,6] # Number of players possible
+    new_carts = []
     if number in valid_numbers:
         for i in range(number):
             if i % 2 == 0:
-                player[i][0] = GoCart(100+(-50*i), -25, # goto
-                                           player[i][1]) # color
-                print(player[i][0], 'created!')
+                new_carts.append(GoCart(100+(-50*i), -25, # goto
+                                           colorgrid[i])) # color
+                print(new_carts[i], 'created!')
             elif i % 2 != 0:
-                player[i][0] = GoCart(75+(-50*(i-1)), -100,
-                                           player[i][1])
-                print(player[i][0], 'created!')
+                new_carts.append(GoCart(75+(-50*(i-1)), -100,
+                                           colorgrid[i]))
+                print(new_carts[i], 'created!')
+
+    else:
+        print("Wrong number of carts.")
+
+    return new_carts
+
 
 def switch_player(pl):
     def set_new_player():
@@ -106,13 +109,15 @@ def switch_player(pl):
         print('Switched to player ', current)
     return set_new_player
 
+grid = []
+grid = create_grid(6)
 
-create_grid(6)
+print (grid)
 
-s.onkey(player[current][0].drive, 'Up')
-s.onkey(player[current][0].back, 'Down')
-s.onkey(player[current][0].turn_left, 'Left')
-s.onkey(player[current][0].turn_right, 'Right')
+s.onkey(grid[current].drive, 'Up')
+s.onkey(grid[current].back, 'Down')
+s.onkey(grid[current].turn_left, 'Left')
+s.onkey(grid[current].turn_right, 'Right')
     
 s.onkey(switch_player(0), '1')
 s.onkey(switch_player(1), '2')
