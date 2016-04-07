@@ -2,18 +2,64 @@
 # -*- coding: utf-8 -*-
 
 
-
-
 from turtle import *
+import time
 
 s = Screen()
+s.bgpic('track2.gif')
 s.delay(0)
-s.bgcolor('lightgreen')
+print(s.window_height())
+print(s.window_width())
 
 colorgrid = ['red', 'blue', 'green', 
             'yellow','pink','black']
 current = 3
 
+
+class WorldView():
+    def __init__(self, llx=-400, lly=-300, urx=400, ury=300):
+        super().__init__()
+        self.llx = llx    # Lower left x
+        self.lly = lly  
+        self.urx = urx    # Upper right x
+        self.ury = ury 
+        self.update_worldview()
+
+        self.shift = 1
+    """ 
+    Transformerer koordinatsystemet i 4 retninger. 
+      Mål: Transformere i alle retninger med 1 funksjon.
+    """
+    def update_worldview(self):
+        s.setworldcoordinates(self.llx, self.lly, 
+                              self.urx, self.ury)
+    def up(self):
+        cbefore = time.clock()
+        self.lly += self.shift
+        self.ury += self.shift
+        self.update_worldview()
+
+        cafter = time.clock()
+        print('%.2f ms' % ((cafter - cbefore)*1000))
+
+        s.ontimer(lambda: self.up(), 33)
+
+    def down(self):
+        self.lly -= self.shift
+        self.ury -= self.shift
+        self.update_worldview()
+
+    def right(self):
+        self.llx += self.shift
+        self.urx += self.shift
+        self.update_worldview()
+
+    def left(self):
+        self.llx -= self.shift
+        self.urx -= self.shift
+        self.update_worldview()
+
+    
 class CartPolygon(Shape):
     def __init__(self, color):
         super().__init__('compound')
@@ -107,7 +153,7 @@ def switch_player(pl):
     current = pl
     print('Switched to player ', current)
 
-
+ww = WorldView()
 grid = []
 grid = create_grid(6)
 
@@ -124,6 +170,8 @@ s.onkey(lambda: switch_player(4), '5')
 s.onkey(lambda: switch_player(5), '6')
 
 s.onkey(lambda: print(current), 'space')
+
+s.ontimer(lambda: ww.up(), 40)
 
 s.listen()
 s.mainloop()
