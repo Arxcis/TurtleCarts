@@ -8,6 +8,7 @@ from turtle import *
 
 s = Screen()
 s.delay(0)
+s.bgcolor('lightgreen')
 
 colorgrid = ['red', 'blue', 'green', 
             'yellow','pink','black']
@@ -84,103 +85,43 @@ class GoCart(Turtle):
 
 def create_grid(number):
     valid_numbers = [1,2,3,4,5,6] # Number of players possible
-    new_carts = []
+    new_grid = []
     if number in valid_numbers:
         for i in range(number):
             if i % 2 == 0:
-                new_carts.append(GoCart(100+(-50*i), -25, # goto
+                new_grid.append(GoCart(100+(-50*i), -25, # goto
                                            colorgrid[i])) # color
-                print(new_carts[i], 'created!')
+                print(new_grid[i], 'created!')
             elif i % 2 != 0:
-                new_carts.append(GoCart(75+(-50*(i-1)), -100,
+                new_grid.append(GoCart(75+(-50*(i-1)), -100,
                                            colorgrid[i]))
-                print(new_carts[i], 'created!')
-
+                print(new_grid[i], 'created!')
     else:
         print("Wrong number of carts.")
 
-    return new_carts
+    return new_grid
 
 
 def switch_player(pl):
-    def set_new_player():
-        global current
-        current = pl
-        print('Switched to player ', current)
-    return set_new_player
+    global current
+    current = pl
+    print('Switched to player ', current)
 
-def drive():
-    if current == 0:
-        grid[0].drive()
-    elif current == 1:
-        grid[1].drive() 
-    elif current == 2:
-        grid[2].drive() 
-    elif current == 3:
-        grid[3].drive() 
-    elif current == 4:
-        grid[4].drive() 
-    elif current == 5:
-        grid[5].drive()
-
-def back():
-    if current == 0:
-        grid[0].back()
-    elif current == 1:
-        grid[1].back() 
-    elif current == 2:
-        grid[2].back() 
-    elif current == 3:
-        grid[3].back() 
-    elif current == 4:
-        grid[4].back() 
-    elif current == 5:
-        grid[5].back()
-
-def left():
-    if current == 0:
-        grid[0].left()
-    elif current == 1:
-        grid[1].left() 
-    elif current == 2:
-        grid[2].left() 
-    elif current == 3:
-        grid[3].left() 
-    elif current == 4:
-        grid[4].left() 
-    elif current == 5:
-        grid[5].left()
-
-def right():
-    if current == 0:
-        grid[0].right()
-    elif current == 1:
-        grid[1].right() 
-    elif current == 2:
-        grid[2].right() 
-    elif current == 3:
-        grid[3].right() 
-    elif current == 4:
-        grid[4].right() 
-    elif current == 5:
-        grid[5].right()       
 
 grid = []
 grid = create_grid(6)
 
-print (grid)
-
-s.onkey(drive, 'Up')
-s.onkey(back, 'Down')
-s.onkey(left, 'Left')
-s.onkey(right, 'Right')
+s.onkey(lambda: grid[current].drive(), 'Up')
+s.onkey(lambda: grid[current].back(), 'Down')
+s.onkey(lambda: grid[current].left(), 'Left')
+s.onkey(lambda: grid[current].right(), 'Right')
     
-s.onkey(switch_player(0), '1')
-s.onkey(switch_player(1), '2')
-s.onkey(switch_player(2), '3')
-s.onkey(switch_player(3), '4')
-s.onkey(switch_player(4), '5')
-s.onkey(switch_player(5), '6')
+s.onkey(lambda: switch_player(0), '1')
+s.onkey(lambda: switch_player(1), '2')
+s.onkey(lambda: switch_player(2), '3')
+s.onkey(lambda: switch_player(3), '4')
+s.onkey(lambda: switch_player(4), '5')
+s.onkey(lambda: switch_player(5), '6')
 
 s.onkey(lambda: print(current), 'space')
 
