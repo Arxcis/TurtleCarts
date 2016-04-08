@@ -4,16 +4,21 @@
 
 from turtle import *
 import time
-
+import math
 s = Screen()
+
+s.bgcolor('green')
 s.bgpic('track2.gif')
 s.delay(0)
+s.setup(800,600)
+
 print(s.window_height())
 print(s.window_width())
 
-colorgrid = ['red', 'blue', 'green', 
+current = 0
+colorlist = ['red', 'blue', 'green', 
             'yellow','pink','black']
-current = 3
+grid = [] 
 
 
 class WorldView():
@@ -30,6 +35,14 @@ class WorldView():
     Transformerer koordinatsystemet i 4 retninger. 
       Mål: Transformere i alle retninger med 1 funksjon.
     """
+
+    def cart_view(self, cart_x, cart_y):
+        self.llx = cart_x - 400.0
+        self.lly = cart_y - 300.0
+        self.urx = cart_x + 400.0
+        self.ury = cart_y + 400.0
+        self.update_worldview()
+
     def update_worldview(self):
         s.setworldcoordinates(self.llx, self.lly, 
                               self.urx, self.ury)
@@ -41,8 +54,6 @@ class WorldView():
 
         cafter = time.clock()
         print('%.2f ms' % ((cafter - cbefore)*1000))
-
-        s.ontimer(lambda: self.up(), 33)
 
     def down(self):
         self.lly -= self.shift
@@ -58,6 +69,8 @@ class WorldView():
         self.llx -= self.shift
         self.urx -= self.shift
         self.update_worldview()
+
+
 
     
 class CartPolygon(Shape):
@@ -98,12 +111,13 @@ class GoCart(Turtle):
         self.render_shape()
 
         # Init variables
-        self.fart = 0
-        self.direction = 0
+        self.fart = 0.0
+        self.direction = 90
         self.speed(0)
 
         self.penup()
         self.goto(x, y)
+        self.seth(90)
         
     def __repr__(self):
         return '%scart' % self.cart
@@ -115,18 +129,51 @@ class GoCart(Turtle):
         self.settiltangle(90)
 
     def left(self):
-        self.direction += 45
+        self.direction += 8
         self.seth(self.direction)
 
     def right(self):
-        self.direction -= 45
+        self.direction -= 8
         self.seth(self.direction)
 
+    def endre_fart(self, retning):
+        if retning == 'brems': 
+            self.fart -= 3.0
+        elif retning == 'gass':
+            self.fart += 1.0
+        else:
+            print('Denne kommandoen er ikke støttet.')
+
     def drive(self):
-        self.forward(10)
+        self.forward(self.fart)
 
     def back(self):
-        self.backward(10)
+        self.backward(10.0)
+
+    def print_pos(self):
+        print(self.position())
+
+
+class KeyBinds():
+    def __init__(self):
+        s.onkeypress(lambda: grid[current].endre_fart('gass'), 'Up')
+        s.onkeypress(lambda: grid[current].endre_fart('brems'), 'Down')
+        s.onkeypress(lambda: grid[current].left(), 'Left')
+        s.onkeypress(lambda: grid[current].right(), 'Right')
+            
+        s.onkey(lambda: self.switch_player(0), '1')
+        s.onkey(lambda: self.switch_player(1), '2')
+        s.onkey(lambda: self.switch_player(2), '3')
+        s.onkey(lambda: self.switch_player(3), '4')
+        s.onkey(lambda: self.switch_player(4), '5')
+        s.onkey(lambda: self.switch_player(5), '6')
+
+        s.onkey(lambda: grid[current].print_pos(), 'space')
+
+    def switch_player(self, pl):
+        global current
+        current = pl
+        print('Switched to player ', current)
 
 
 def create_grid(number):
@@ -135,43 +182,42 @@ def create_grid(number):
     if number in valid_numbers:
         for i in range(number):
             if i % 2 == 0:
-                new_grid.append(GoCart(100+(-50*i), -25, # goto
-                                           colorgrid[i])) # color
-                print(new_grid[i], 'created!')
+                new_grid.append(GoCart(-650, -200+(-50*i), colorlist[i])) # color
+                print(new_grid[i], 'created! at position: ', new_grid[i].position())
             elif i % 2 != 0:
-                new_grid.append(GoCart(75+(-50*(i-1)), -100,
-                                           colorgrid[i]))
-                print(new_grid[i], 'created!')
+                new_grid.append(GoCart(-750, -300+(-50*(i-1)), colorlist[i]))
+                print(new_grid[i], 'created! at position: ', new_grid[i].position())
     else:
         print("Wrong number of carts.")
 
     return new_grid
 
 
-def switch_player(pl):
-    global current
-    current = pl
-    print('Switched to player ', current)
-
-ww = WorldView()
-grid = []
+world = WorldView((-650-400),(-200-300),(-650+400),(-200+300))
 grid = create_grid(6)
+# Initiate objects
+keys = KeyBinds()
 
-s.onkey(lambda: grid[current].drive(), 'Up')
-s.onkey(lambda: grid[current].back(), 'Down')
-s.onkey(lambda: grid[current].left(), 'Left')
-s.onkey(lambda: grid[current].right(), 'Right')
-    
-s.onkey(lambda: switch_player(0), '1')
-s.onkey(lambda: switch_player(1), '2')
-s.onkey(lambda: switch_player(2), '3')
-s.onkey(lambda: switch_player(3), '4')
-s.onkey(lambda: switch_player(4), '5')
-s.onkey(lambda: switch_player(5), '6')
 
-s.onkey(lambda: print(current), 'space')
+def game_main(fps):
+    ms = int(1000/fps)
 
-s.ontimer(lambda: ww.up(), 40)
+    def loop():
+        # Check cart position
+        x, y = grid[current].position()
+
+        # Move world      
+        world.cart_view(x, y)
+
+        # Move cart
+        grid[current].drive()          
+
+        s.ontimer(loop, ms)
+
+    loop()
+
+
+game_main(16)
 
 s.listen()
 s.mainloop()
@@ -180,5 +226,5 @@ s.mainloop()
 
 """ 
 session 00:00 - 01:21 - 01:54 - 03:32
-
+session 00:00 -02:30
 """
