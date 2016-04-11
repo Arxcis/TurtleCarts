@@ -31,6 +31,7 @@ class WorldView():
         self.update_worldview()
 
         self.shift = 1
+
     """ 
     Transformerer koordinatsystemet i 4 retninger. 
       Mål: Transformere i alle retninger med 1 funksjon.
@@ -38,7 +39,7 @@ class WorldView():
 
     def cart_view(self, cart_x, cart_y):
         self.llx = cart_x - 400.0
-        self.lly = cart_y - 300.0
+        self.lly = cart_y - 400.0
         self.urx = cart_x + 400.0
         self.ury = cart_y + 400.0
         self.update_worldview()
@@ -46,33 +47,7 @@ class WorldView():
     def update_worldview(self):
         s.setworldcoordinates(self.llx, self.lly, 
                               self.urx, self.ury)
-    def up(self):
-        cbefore = time.clock()
-        self.lly += self.shift
-        self.ury += self.shift
-        self.update_worldview()
 
-        cafter = time.clock()
-        print('%.2f ms' % ((cafter - cbefore)*1000))
-
-    def down(self):
-        self.lly -= self.shift
-        self.ury -= self.shift
-        self.update_worldview()
-
-    def right(self):
-        self.llx += self.shift
-        self.urx += self.shift
-        self.update_worldview()
-
-    def left(self):
-        self.llx -= self.shift
-        self.urx -= self.shift
-        self.update_worldview()
-
-
-
-    
 class CartPolygon(Shape):
     def __init__(self, color):
         super().__init__('compound')
@@ -115,6 +90,7 @@ class GoCart(Turtle):
         self.direction = 90
         self.speed(0)
 
+        self.color('white')
         self.penup()
         self.goto(x, y)
         self.seth(90)
@@ -129,18 +105,18 @@ class GoCart(Turtle):
         self.settiltangle(90)
 
     def left(self):
-        self.direction += 8
+        self.direction += 22.5
         self.seth(self.direction)
 
     def right(self):
-        self.direction -= 8
+        self.direction -= 22.5
         self.seth(self.direction)
 
     def endre_fart(self, retning):
         if retning == 'brems': 
-            self.fart -= 3.0
+            self.fart -= 6.0
         elif retning == 'gass':
-            self.fart += 1.0
+            self.fart += 3.0
         else:
             print('Denne kommandoen er ikke støttet.')
 
@@ -156,24 +132,35 @@ class GoCart(Turtle):
 
 class KeyBinds():
     def __init__(self):
-        s.onkeypress(lambda: grid[current].endre_fart('gass'), 'Up')
-        s.onkeypress(lambda: grid[current].endre_fart('brems'), 'Down')
-        s.onkeypress(lambda: grid[current].left(), 'Left')
-        s.onkeypress(lambda: grid[current].right(), 'Right')
+        s.onkey(lambda: grid[current].endre_fart('gass'), 'Up')
+        s.onkey(lambda: grid[current].endre_fart('brems'), 'Down')
+        s.onkey(lambda: grid[current].left(), 'Left')
+        s.onkey(lambda: grid[current].right(), 'Right')
+
+        s.onkey(lambda: grid[1].endre_fart('gass'), 'w')
+        s.onkey(lambda: grid[1].endre_fart('brems'), 's')
+        s.onkey(lambda: grid[1].left(), 'a')
+        s.onkey(lambda: grid[1].right(), 'd')
             
         s.onkey(lambda: self.switch_player(0), '1')
-        s.onkey(lambda: self.switch_player(1), '2')
+        # s.onkey(lambda: self.switch_player(1), '2')
         s.onkey(lambda: self.switch_player(2), '3')
         s.onkey(lambda: self.switch_player(3), '4')
         s.onkey(lambda: self.switch_player(4), '5')
         s.onkey(lambda: self.switch_player(5), '6')
 
-        s.onkey(lambda: grid[current].print_pos(), 'space')
+        s.onkey(self.print_speed, 'space')
 
     def switch_player(self, pl):
         global current
         current = pl
         print('Switched to player ', current)
+
+    def print_speed(self):
+        print('\n')
+        for cart in grid:
+            print(' %d km/t' % cart.fart)
+            print(cart.position())
 
 
 def create_grid(number):
@@ -193,8 +180,33 @@ def create_grid(number):
     return new_grid
 
 
+def cart_midtpunkt(pos_list):
+    """ Denne funksjonen finner midtpunktet
+         mellom 2 objekter. Oppgave: få dette til å fungere
+          med mange objekter. 
+    """
+    # global carts
+    global carts
+    xsum = 0  
+    ysum = 0
+  
+    # Calculate the sum of all x and y koordinates
+    for xpos, ypos in pos_list:
+        xsum += xpos
+        ysum += ypos
+
+    # Center of mass formula --> http://goo.gl/Qn383W
+    xmid = xsum/carts
+    ymid = ysum/carts
+
+    return xmid, ymid
+
+# ------- MAIN -----------------
+
+carts = int(s.numinput('#Carts', 'How many cars?', 1, 1, 6))
+print(6)
 world = WorldView((-650-400),(-200-300),(-650+400),(-200+300))
-grid = create_grid(6)
+grid = create_grid(carts)
 # Initiate objects
 keys = KeyBinds()
 
@@ -203,21 +215,28 @@ def game_main(fps):
     ms = int(1000/fps)
 
     def loop():
-        # Check cart position
-        x, y = grid[current].position()
+        positions = []
+        # Check carts position
+        for cart in grid:
+            x, y = cart.position()
+            positions.append([x, y])
+        
+        xm, ym = cart_midtpunkt(positions)
 
         # Move world      
-        world.cart_view(x, y)
+        world.cart_view(xm, ym)
 
         # Move cart
-        grid[current].drive()          
+        for cart in grid:
+            cart.drive()
+            cart.clear()
+            cart.write('%d km/t' % int(cart.fart*5), move=False, align='center', font=('Maven Pro', 12, 'bold'))
 
         s.ontimer(loop, ms)
-
     loop()
 
 
-game_main(16)
+game_main(30)
 
 s.listen()
 s.mainloop()
